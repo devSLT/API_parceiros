@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 /*Definindo um Schema de signup*/
 
-const signupSchema = new mongoose.Schema({
+const signupanaliseSchema = new mongoose.Schema({
     businessName: String,
-    email:String,
+    email: String,
     phone: Number,
     personalPhone: Number,
     cnpj: Number,
@@ -14,4 +14,4 @@ const signupSchema = new mongoose.Schema({
 })
 
 /*Exportar a maneiro como ele sera chamo, depois o nome do Schema*/
-module.exports = mongoose.model('SignUp', signupSchema);
+module.exports = mongoose.model('SignUpAnalise', signupanaliseSchema);
