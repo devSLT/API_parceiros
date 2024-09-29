@@ -5,6 +5,7 @@ const cors = require('cors');
 const app = express();
 const signup = require('./routes/signup/signup.js');
 const getTable = require('./routes/getTable/getTable.js');
+const setTable = require('./routes/setTable/setTable.js');
 const mongoose = require('mongoose');
 const PORT = 8080;
 
@@ -28,6 +29,7 @@ app.use(express.urlencoded({ extended: true }))
 
 app.use('/api', signup)
 app.use('/getTable', getTable)
+app.use('/setTable', setTable)
 
 app.listen(PORT, (err) => {
     if (err) {
