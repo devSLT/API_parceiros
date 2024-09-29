@@ -3,7 +3,6 @@ const router = express.Router();
 //model
 const SignUpAnalise = require('../../models/SignUpModelAnalise.js');
 const { generateVerificationCode, sendVerificationEmail } = require('../../models/verificationEmail.js');
-const CodeEmail = require('../../models/codeVerification.js');
 const UserTemp = require('../../models/UserTemp.js')
 //validacoes
 const bcrypt = require('bcrypt');
@@ -44,7 +43,7 @@ router.get('/', (req, res) => {
 router.post('/signup', async (req, res) => {
 
     //Pega os dados do body
-    const { businessName, email, phone, personalPhone, cnpj, cep, address, password } = req.body;
+    const { businessName, email, phone, personalPhone, cnpj, businessType, cep, address, password } = req.body;
 
     //Validacoes de input
     if (!businessName || !email || !phone || !personalPhone || !cnpj || !cep || !address || !password) {
@@ -61,6 +60,10 @@ router.post('/signup', async (req, res) => {
 
     if (!validateCNPJ(cnpj)) {
         return res.status(400).json({ msg: "Insira um CNPJ válido, utilize somente números." });
+    }
+
+    if (!businessType) {
+        return res.status(400).json({ msg: "O tipo de negócio é obrigatório" });
     }
 
     if (!validatePhone(phone)) {
@@ -85,6 +88,7 @@ router.post('/signup', async (req, res) => {
         phone,
         personalPhone,
         cnpj,
+        businessType,
         cep,
         address,
         password: hashedPassword,
@@ -141,6 +145,7 @@ router.post('/verify', async (req, res) => {
             phone: userTemp.phone,
             personalPhone: userTemp.personalPhone,
             cnpj: userTemp.cnpj,
+            businessType:userTemp.businessType,
             cep: userTemp.cep,
             address: userTemp.address, // Corrigido o nome do campo para "address"
             password: userTemp.password,
