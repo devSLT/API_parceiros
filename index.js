@@ -23,7 +23,7 @@ db.once("open", ()=>{console.log(`Banco de dados carregado`)});
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-app.use('/signup', signup)
+app.use('/api', signup)
 
 app.listen(PORT, (err) => {
     if (err) {
