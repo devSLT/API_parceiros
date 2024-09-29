@@ -25,7 +25,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/api', signup)
-app.use('/table', getTable)
+app.use('/getTable', getTable)
 
 app.listen(PORT, (err) => {
     if (err) {
