@@ -4,9 +4,12 @@ const router = express.Router();
 const SignUpAnalise = require('../../models/SignUpModelAnalise.js');
 const { generateVerificationCode, sendVerificationEmail } = require('../../models/verificationEmail.js');
 const UserTemp = require('../../models/UserTemp.js')
+const UserAceito = require('../../models/tabelaAceitadosModel.js')
 //validacoes
 const bcrypt = require('bcrypt');
 const validator = require('validator');
+const crypto = require('crypto');
+
 
 
 // Prepara Verificacoes Regex && Validator
@@ -35,9 +38,17 @@ const validateCEP = (cep) => {
     return regex.test(cep) && !validator.isEmpty(cep);
 };
 
-router.get('/', (req, res) => {
-    res.status(200).json({ msg: "Hello World" })
+
+//Faz uma vistoria completa em todos os cadastrados
+router.get('/', async (req, res) => {
+    try {
+        const cadastrados = await SignUpAnalise.find();
+        res.status(200).json(cadastrados);
+    } catch (err) {
+        res.status(500).json({ msg: `Houve um erro: ${err}` })
+    }
 })
+
 
 
 router.post('/signup', async (req, res) => {
@@ -112,7 +123,7 @@ router.post('/signup', async (req, res) => {
         await userTemp.save();
 
         //Envia o codigo para confirmacao do e-mail
-        sendVerificationEmail(email, verificationCode)
+        sendVerificationEmail(email, `<h3>Seu código de verificação é: ${verificationCode}</h3>`)
         res.status(201).json({ msg: 'Código de verificação enviado.' });
 
     } catch (error) {
@@ -132,6 +143,7 @@ router.put('/resendCode', async (req, res) => {
         return res.status(400).json({ msg: "Insira um E-mail válido." });
     }
 
+    //gera um novo codigo
     const newCode = generateVerificationCode();
 
     UserTemp.findOneAndUpdate(
@@ -145,7 +157,7 @@ router.put('/resendCode', async (req, res) => {
                 return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
             }
 
-            sendVerificationEmail(email, newCode)
+            sendVerificationEmail(email, `<h3>Seu novo código de verificação é: ${newCode}</h3>`)
 
             res.json({ success: true, message: 'Código atualizado e enviado com sucesso!' });
 
@@ -198,15 +210,183 @@ router.post('/verify', async (req, res) => {
 
 });
 
+//send code to change password
+router.post('/forgotPass', async (req, res) => {
 
-//Faz uma vistoria completa em todos os cadastrados
-router.get('/cadastrados', async (req, res) => {
+    const { email } = req.body;
+
+    if (!validateEmail(email)) {
+        return res.status(400).json({ msg: "Insira um E-mail válido." });
+    }
+
     try {
-        const cadastrados = await SignUpAnalise.find();
-        res.status(200).json(cadastrados);
+
+        const user = await UserAceito.findOne({ email })
+
+        if (!user) {
+            return res.status(500).json({ sucess: false, msg: "Usuário não encontrado" })
+        }
+
+        //Se encontrar
+        // Gera um token randômico para redefinição de senha
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpires = Date.now() + 20 * 60 * 1000; // Token expira em 20 minutos
+
+        await UserAceito.findOne(
+            { email },
+            { resetToken, resetTokenExpires }
+        )
+
+        const resetUrl = `http://127.0.0.1:5500/pages/site/changePass.html?token=${resetToken}`;
+
+
+        sendVerificationEmail(email, `<h3>Link para alteração de senha NeedFarma: <a href="${resetUrl}">Alterar Senha</a></h3>`)
+
+        res.json({ msg: 'Link de redefinição de senha enviado ao seu E-mail.' });
+
     } catch (err) {
-        res.status(500).json({ msg: `Houve um erro: ${err}` })
+        console.error(err);
+        res.status(500).json({ msg: 'Erro ao solicitar redefinição de senha.' });
+    }
+
+})
+
+router.get('/resetPassword', async (req, res) => {
+
+    const { token } = req.query; // Use req.query para acessar o token
+
+    try {
+        const user = await UserAceito.findOne({ resetToken: token, resetTokenExpires: { $gt: Date.now() } });
+
+        if (!user) {
+            return res.status(400).json({ msg: 'Token inválido ou expirado.' });
+        }
+
+        // Redirect to change password page
+        res.redirect(`http://localhost:5500/reset-password?token=${token}`); // Redireciona para a URL da página de alteração de senha
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Erro ao verificar o token.' });
     }
 })
+
+//Change Password
+router.put('/changePass', async (req, res) => {
+
+    const { email, password, confirmPassword } = req.body
+
+    if (!validateEmail(email)) {
+        return res.status(400).json({ msg: "Insira um E-mail válido." });
+    }
+
+    if (!validatePassword(password)) {
+        return res.status(400).json({ "msg": "A senha deve conter no mínimo 8 caracteres, incluindo uma letra maiúscula, uma letra minúscula, um número e um caractere especial (@$!%*?&)." });
+    }
+
+    if (!validatePassword(confirmPassword)) {
+        return res.status(400).json({ "msg": "A senha deve conter no mínimo 8 caracteres, incluindo uma letra maiúscula, uma letra minúscula, um número e um caractere especial (@$!%*?&)." });
+    }
+
+    if (password !== confirmPassword) {
+        return res.status(409).json({ msg: "As senhas não coincidem" })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    try {
+
+        const updatedUser = await UserAceito.findOneAndUpdate(
+            { email },
+            { password: hashedPassword, resetToken: null, resetTokenExpires: null },
+            { new: true },
+        )
+
+        if (!updatedUser) {
+            s
+            console.log(updatedUser)
+            return res.status(404).json({ sucess: false, msg: 'Usuário não encontrado para atualização.' });
+        }
+
+        res.status(201).json({ sucess: true, msg: `Senha alterada com sucesso!` })
+
+    } catch (err) {
+        res.send(500).json({ sucess: false, msg: `Ocorreu um erro ao tentar atualizar senha` })
+        throw new Error(err)
+    }
+
+})
+
+router.put('/resendPass', async (req, res) => {
+
+    const { email } = req.body
+
+    if (!validateEmail(email)) {
+        return res.status(400).json({ msg: "Insira um E-mail válido." });
+    }
+
+    // Gera um token randômico para redefinição de senha
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpires = Date.now() + 20 * 60 * 1000; // Token expira em 20 minutos
+
+    try {
+        const findUser = await UserAceito.findOneAndUpdate(
+            { email },
+            { resetToken, resetTokenExpires },
+            { new: true, },
+        )
+
+        if (!findUser) {
+            return res.status(500).json({ sucess: false, msg: "O usuário não foi encontrado" })
+        }
+
+        const resetUrl = `http://127.0.0.1:5500/pages/site/changePass.html?token=${resetToken}`;
+
+        sendVerificationEmail(email, `<h3>Link para alteração de senha NeedFarma: <a href="${resetUrl}">Alterar Senha</a></h3>`);
+
+        res.json({ success: true, message: 'Novo link para alteração de senha foi enviado' });
+    } catch(err){
+        res.status(500).json({ success: false, message: 'Ocorreu um erro ao enviar um novo link', error: err });
+    }
+
+
+})
+
+/*
+    
+    //Rota reenviar codigo
+router.put('/resendCode', async (req, res) => {
+
+    const { email } = req.body
+
+    if (!validateEmail(email)) {
+        return res.status(400).json({ msg: "Insira um E-mail válido." });
+    }
+
+    //gera um novo codigo
+    const newCode = generateVerificationCode();
+
+    UserTemp.findOneAndUpdate(
+        { email },
+        { verificationcode: newCode },
+        { new: true },
+    )
+        .then(user => {
+
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
+            }
+
+            sendVerificationEmail(email, `<h3>Seu novo código de verificação é: ${newCode}</h3>`)
+
+            res.json({ success: true, message: 'Código atualizado e enviado com sucesso!' });
+
+        })
+        .catch(err => {
+            res.status(500).json({ success: false, message: 'Erro ao atualizar o código', error: err });
+        });
+
+})
+        
+*/
 
 module.exports = router

@@ -22,7 +22,7 @@ const sendVerificationEmail = async (email, code) => {
         from: `${EMAIL}`,
         to: email,
         subject: 'Verificação de E-mail NeedFarma Parceiros',
-        text: `Seu código de verificação é: ${code}`,
+        html: code,
     };
 
     try {
