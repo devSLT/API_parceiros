@@ -9,8 +9,8 @@ const negados = require('../../models/tabelaNegadosModel.js'); // Import the mod
 router.get('/emAnalise', async (req, res) => {
     try {
         const documents = await emAnalise.find({}); // Fetch all documents from the collection
-         // Transform documents into the desired format
-         // Helper function to format date as DD/MM/YYYY
+        // Transform documents into the desired format
+        // Helper function to format date as DD/MM/YYYY
         const formatDate = (date) => {
             const d = new Date(date);
             const day = String(d.getDate()).padStart(2, '0'); // Add leading 0 if necessary
@@ -37,8 +37,8 @@ router.get('/emAnalise', async (req, res) => {
 router.get('/aceitados', async (req, res) => {
     try {
         const documents = await aceitados.find({}); // Fetch all documents from the collection
-         // Transform documents into the desired format
-         // Helper function to format date as DD/MM/YYYY
+        // Transform documents into the desired format
+        // Helper function to format date as DD/MM/YYYY
         const formatDate = (date) => {
             const d = new Date(date);
             const day = String(d.getDate()).padStart(2, '0'); // Add leading 0 if necessary
@@ -65,8 +65,8 @@ router.get('/aceitados', async (req, res) => {
 router.get('/negados', async (req, res) => {
     try {
         const documents = await negados.find({}); // Fetch all documents from the collection
-         // Transform documents into the desired format
-         // Helper function to format date as DD/MM/YYYY
+        // Transform documents into the desired format
+        // Helper function to format date as DD/MM/YYYY
         const formatDate = (date) => {
             const d = new Date(date);
             const day = String(d.getDate()).padStart(2, '0'); // Add leading 0 if necessary
@@ -83,7 +83,7 @@ router.get('/negados', async (req, res) => {
                 dateOfCreation: formatDate(new Date(new mongoose.Types.ObjectId(doc._id).getTimestamp()).toISOString()) // Correct 'new' usage
             };
         });
-        res.status(200).json(documents); // Send the documents as JSON
+        res.status(200).json(transformedDocuments); // Send the documents as JSON
     } catch (error) {
         console.error('Erro recebendo informações:', error);
         res.status(500).json({ message: 'Erro recebendo informações' });
