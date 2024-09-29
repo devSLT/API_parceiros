@@ -1,9 +1,10 @@
 require('dotenv').config();
 
 const express = require('express');
+const cors = require('cors');
 const app = express();
-const signup = require('./routes/signup/signup.js')
-const getTable = require('./routes/getTable/getTable.js')
+const signup = require('./routes/signup/signup.js');
+const getTable = require('./routes/getTable/getTable.js');
 const mongoose = require('mongoose');
 const PORT = 8080;
 
@@ -21,6 +22,7 @@ db.once("open", ()=>{console.log(`Banco de dados carregado`)});
 
 /*Express JS*/
 
+app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 

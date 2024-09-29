@@ -123,6 +123,39 @@ router.post('/signup', async (req, res) => {
 
 })
 
+//Rota reenviar codigo
+router.put('/resendCode', async (req, res) => {
+
+    const { email } = req.body
+
+    if (!validateEmail(email)) {
+        return res.status(400).json({ msg: "Insira um E-mail válido." });
+    }
+
+    const newCode = generateVerificationCode();
+
+    UserTemp.findOneAndUpdate(
+        { email },
+        { verificationcode: newCode },
+        { new: true },
+    )
+        .then(user => {
+
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
+            }
+
+            sendVerificationEmail(email, newCode)
+
+            res.json({ success: true, message: 'Código atualizado e enviado com sucesso!' });
+
+        })
+        .catch(err => {
+            res.status(500).json({ success: false, message: 'Erro ao atualizar o código', error: err });
+        });
+
+})
+
 //Rota que ira verificar o codigo
 router.post('/verify', async (req, res) => {
 
@@ -145,7 +178,7 @@ router.post('/verify', async (req, res) => {
             phone: userTemp.phone,
             personalPhone: userTemp.personalPhone,
             cnpj: userTemp.cnpj,
-            businessType:userTemp.businessType,
+            businessType: userTemp.businessType,
             cep: userTemp.cep,
             address: userTemp.address, // Corrigido o nome do campo para "address"
             password: userTemp.password,
@@ -157,7 +190,7 @@ router.post('/verify', async (req, res) => {
         // Exclui o usuário temporário após a verificação
         await UserTemp.deleteOne({ email });
 
-        res.status(201).json({ msg: 'Usuário criado com sucesso!' });
+        res.status(201).json({ msg: 'Sua conta foi enviada para análise, enviaremos um email assim que ela for aceita.' });
     } catch (error) {
         console.error('Erro ao processar a verificação:', error);
         res.status(500).json({ msg: 'Erro ao processar a verificação.' });
