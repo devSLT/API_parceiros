@@ -16,4 +16,4 @@ const signupanaliseSchema = new mongoose.Schema({
 })
 
 /*Exportar a maneiro como ele sera chamo, depois o nome do Schema*/
-module.exports = mongoose.model('signupanalises', signupanaliseSchema);
+module.exports = mongoose.model('useranalises', signupanaliseSchema);

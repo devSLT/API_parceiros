@@ -207,7 +207,7 @@ const userController = {
                     return res.status(401).json({ msg: 'Senha inválida.' });
                 }
 
-                const token = jwt.sign({ id: userAceito._id, admin: userAceito.admin }, process.env.TOKEN_SECRET, /*{ expiresIn: 300 }*/);
+                const token = jwt.sign({ id: userAceito._id, admin: userAceito.admin}, process.env.TOKEN_SECRET, /*{ expiresIn: 300 }*/);
 
                 res.header('authorization-token', token)
 
