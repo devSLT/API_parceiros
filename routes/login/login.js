@@ -7,6 +7,9 @@ const UserNegados = require('../../models/tabelaNegadosModel.js');
 //validacoes
 const bcrypt = require('bcrypt');
 const validator = require('validator');
+const jwt = require('jsonwebtoken')
+
+//const SECRET = 'soueudenovo_orj' //passar para .env
 
 
 
@@ -21,8 +24,19 @@ const validatePassword = (password) => {
     return regex.test(password) && validator.isLength(password, { min: 8 });
 };
 
+/*function verifyJWT(req, res, next) {
+    const token = req.headers['x-access-token'];
+    jwt.verify(token, SECRET, (err, decoded) => {
+        if (err) return res.status(401).end();
+
+        req.userId = decoded.userId;
+        next();
+    })
+}*/
 
 router.post('/login', async (req, res) => {
+
+    console.log(req.userId + 'Fez está chamada')
 
     const { email, password } = req.body;
 
@@ -58,8 +72,13 @@ router.post('/login', async (req, res) => {
                 return res.status(401).json({ msg: 'Senha inválida.' });
             }
 
-            res.status(200).json({ sucess: true, msg: "Login Realizado com sucesso" })
+            const token = jwt.sign({ id: userAceito._id }, SECRET, { expiresIn: 300 });
+
+
+            res.status(200).json({ sucess: true, msg: "Login Realizado com sucesso", token })
         }
+
+        res.status(401).end()
 
     } catch (err) {
         console.error(err);

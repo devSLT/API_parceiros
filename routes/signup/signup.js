@@ -38,19 +38,6 @@ const validateCEP = (cep) => {
     return regex.test(cep) && !validator.isEmpty(cep);
 };
 
-
-//Faz uma vistoria completa em todos os cadastrados
-router.get('/', async (req, res) => {
-    try {
-        const cadastrados = await SignUpAnalise.find();
-        res.status(200).json(cadastrados);
-    } catch (err) {
-        res.status(500).json({ msg: `Houve um erro: ${err}` })
-    }
-})
-
-
-
 router.post('/signup', async (req, res) => {
 
     //Pega os dados do body
@@ -110,9 +97,9 @@ router.post('/signup', async (req, res) => {
     try {
 
         //Separa os principais identificadores para verificar se sao unicos
-        const verEmail = await SignUpAnalise.findOne({ email });
-        const verPhone = await SignUpAnalise.findOne({ phone });
-        const verCnpj = await SignUpAnalise.findOne({ cnpj });
+        const verEmail = await UserTemp.findOne({ email });
+        const verPhone = await UserTemp.findOne({ phone });
+        const verCnpj = await UserTemp.findOne({ cnpj });
 
         // Se forem unicos autoriza a criacao
         if (verEmail || verPhone || verCnpj) {
@@ -350,43 +337,5 @@ router.put('/resendPass', async (req, res) => {
 
 
 })
-
-/*
-    
-    //Rota reenviar codigo
-router.put('/resendCode', async (req, res) => {
-
-    const { email } = req.body
-
-    if (!validateEmail(email)) {
-        return res.status(400).json({ msg: "Insira um E-mail válido." });
-    }
-
-    //gera um novo codigo
-    const newCode = generateVerificationCode();
-
-    UserTemp.findOneAndUpdate(
-        { email },
-        { verificationcode: newCode },
-        { new: true },
-    )
-        .then(user => {
-
-            if (!user) {
-                return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
-            }
-
-            sendVerificationEmail(email, `<h3>Seu novo código de verificação é: ${newCode}</h3>`)
-
-            res.json({ success: true, message: 'Código atualizado e enviado com sucesso!' });
-
-        })
-        .catch(err => {
-            res.status(500).json({ success: false, message: 'Erro ao atualizar o código', error: err });
-        });
-
-})
-        
-*/
 
 module.exports = router
