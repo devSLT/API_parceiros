@@ -1,7 +1,9 @@
+require('dotenv').config();
 //Models DB
 const userAnalise = require('../models/UserAnalise.js');
-const UserTemp = require('../models/UserTemp.js')
-const UserAceito = require('../models/tabelaAceitadosModel.js')
+const UserTemp = require('../models/UserTemp.js');
+const UserAceito = require('../models/tabelaAceitadosModel.js');
+const UserNegados = require('../models/tabelaNegadosModel.js');
 //Functions Gerar e Enviar
 const { generateVerificationCode, sendVerificationEmail } = require('../models/verificationEmail.js');
 
@@ -182,9 +184,9 @@ const userController = {
 
         try {
 
-            const userAnalise = await SignUpAnalise.findOne({ email });
+            const useranalise = await userAnalise.findOne({ email });
 
-            if (userAnalise) {
+            if (useranalise) {
                 return res.status(401).json({ sucess: false, msg: "Sua conta ainda está em análise" });
             }
 
@@ -204,10 +206,11 @@ const userController = {
                     return res.status(401).json({ msg: 'Senha inválida.' });
                 }
 
-                const token = jwt.sign({ id: userAceito._id }, SECRET, { expiresIn: 300 });
+                const token = jwt.sign({ id: userAceito._id, admin: userAceito.admin }, process.env.TOKEN_SECRET, /*{ expiresIn: 300 }*/);
 
+                res.header('authorization-token', token)
 
-                res.status(200).json({ sucess: true, msg: "Login Realizado com sucesso", token })
+                res.status(200).json({ sucess: true, msg: "Login Realizado com sucesso"})
             }
 
             res.status(401).end()
