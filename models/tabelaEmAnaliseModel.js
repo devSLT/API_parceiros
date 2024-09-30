@@ -12,6 +12,7 @@ const signupanaliseSchema = new mongoose.Schema({
     cep: { type: Number, required: true,},
     address: { type: String, required: true, },
     password: { type: String, required: true, },
+    admin: { type: Boolean, default: false, },
 })
 
 /*Exportar a maneiro como ele sera chamo, depois o nome do Schema*/

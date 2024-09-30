@@ -154,6 +154,7 @@ const userController = {
                 cep: userTemp.cep,
                 address: userTemp.address,
                 password: userTemp.password,
+                admin: userTemp.admin,
             });
 
             // Salva o novo usuário

@@ -12,6 +12,7 @@ const usertempSchema = new mongoose.Schema({
     cep: { type: Number, required: true,},
     address: { type: String, required: true, },
     password: { type: String, required: true, },
+    admin: { type: Boolean, default: false, },
     verificationcode: { type: String, required: true,},
     expiresAt: { type: Date, required: true,},
 })

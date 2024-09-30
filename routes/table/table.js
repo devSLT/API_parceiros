@@ -181,6 +181,7 @@ router.delete('/adminAccept', async (req, res) => {
             cep: documentToDelete.cep,
             address: documentToDelete.address,
             password: documentToDelete.password,
+            admin: documentToDelete.admin,
         });
 
         // mandar pra outra coleção a copia
@@ -224,6 +225,7 @@ router.delete('/adminDeny', async (req, res) => {
             cep: documentToDelete.cep,
             address: documentToDelete.address,
             password: documentToDelete.password,
+            admin: documentToDelete.admin,
         });
 
         // mandar pra outra coleção a copia
@@ -267,6 +269,7 @@ router.delete('/adminUndeny', async (req, res) => {
             cep: documentToDelete.cep,
             address: documentToDelete.address,
             password: documentToDelete.password,
+            admin: documentToDelete.admin,
         });
 
         // mandar pra outra coleção a copia
@@ -310,6 +313,7 @@ router.delete('/adminUnaccept', async (req, res) => {
             cep: documentToDelete.cep,
             address: documentToDelete.address,
             password: documentToDelete.password,
+            admin: documentToDelete.admin,
         });
 
         // mandar pra outra coleção a copia
