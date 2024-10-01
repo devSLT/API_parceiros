@@ -17,6 +17,9 @@ router.post('/verify', userController.verify);
 //Logar conta
 router.post('/login', userController.login)
 
+//Check Token
+router.post('/check', userController.check)
+
 //send code to change password
 router.post('/forgotPass', userController.forgotPassword);
 

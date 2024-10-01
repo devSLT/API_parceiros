@@ -170,8 +170,9 @@ const userController = {
         }
     },
 
+    // ############ LOGIN ####################
+
     login: async function (req, res) {
-        console.log(req.userId + 'Fez está chamada')
 
         const { email, password } = req.body;
 
@@ -198,6 +199,7 @@ const userController = {
             }
 
             const userAceito = await UserAceito.findOne({ email });
+
             if (userAceito) {
 
                 // Compare a senha fornecida com a senha armazenada
@@ -207,19 +209,52 @@ const userController = {
                     return res.status(401).json({ msg: 'Senha inválida.' });
                 }
 
-                const token = jwt.sign({ id: userAceito._id, admin: userAceito.admin}, process.env.TOKEN_SECRET, /*{ expiresIn: 300 }*/);
+                const SECRET = process.env.TOKEN_SECRET
 
-                res.header('authorization-token', token)
+                const token = jwt.sign({
 
-                res.status(200).json({ sucess: true, msg: "Login Realizado com sucesso"})
+                    id: userAceito._id,
+                    admin: userAceito.admin,
+
+                },
+                    SECRET,
+                    /*{ expiresIn: 300 }*/
+                );
+
+
+                return res.status(200).json({ sucess: true, msg: "Login Realizado com sucesso", token })
             }
 
-            res.status(401).end()
+            res.status(401).json({ sucess: false, msg: "Não foi possível realizar o login" })
 
         } catch (err) {
             console.error(err);
             res.status(500).json({ msg: 'Erro ao tentar fazer login.' });
         }
+    },
+
+    // ############ CHECK TOKEN ####################
+
+    check: function async(req, res) {
+
+        const authHeader = req.headers['authorization'];
+        const authToken = authHeader && authHeader.split(" ")[1];
+        const token = authToken.replace(/^Bearer\s+/i, '');
+
+        if (!token) {
+            res.status(401).json({ sucess: false, msg: "Acesso Negado" });
+        }
+
+        const SECRET = process.env.TOKEN_SECRET;
+
+        jwt.verify(token, SECRET, (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ msg: "Token inválido!", sucess: false });
+            } else {
+                return res.status(200).json({ msg: "Token válido!", sucess: true, user: decoded });
+            }
+        })
+
     },
 
     forgotPassword: async function (req, res) {
