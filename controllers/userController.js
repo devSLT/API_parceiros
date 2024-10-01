@@ -89,7 +89,7 @@ const userController = {
             await userTemp.save();
 
             //Envia o codigo para confirmacao do e-mail
-            sendVerificationEmail(email, `<h3>Seu código de verificação é: ${verificationCode}</h3>`)
+            sendVerificationEmail(email, `<h3>Seu código de verificação NeedFarma é: ${verificationCode}</h3>`)
             res.status(201).json({ msg: 'Código de verificação enviado.' });
 
         } catch (error) {
