@@ -6,7 +6,7 @@ const app = express();
 const userRouter = require('./routes/userRouter.js')
 const table = require('./routes/table/table.js');
 const mongoose = require('mongoose');
-const PORT = 8080;
+const PORT = process.env.PORT || 8001;
 
 /*Conection DB*/
 const db_user = process.env.DB_USER;
