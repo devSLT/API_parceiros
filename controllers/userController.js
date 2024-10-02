@@ -8,7 +8,7 @@ const UserNegados = require('../models/tabelaNegadosModel.js');
 const { generateVerificationCode, sendVerificationEmail } = require('../models/verificationEmail.js');
 
 //validacoes
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const inpValidacoes = require('./inputsValidation.js');
