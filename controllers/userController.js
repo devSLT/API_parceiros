@@ -218,7 +218,7 @@ const userController = {
 
                 },
                     SECRET,
-                    /*{ expiresIn: 300 }*/
+                    { expiresIn: '1d' }
                 );
 
 
@@ -281,7 +281,7 @@ const userController = {
                 { resetToken, resetTokenExpires }
             )
 
-            const resetUrl = `http://127.0.0.1:5500/pages/site/changePass.html?token=${resetToken}`;
+            const resetUrl = `https://parceiros-need-farma.vercel.app/pages/site/changePass.html?token=${resetToken}`;
 
 
             sendVerificationEmail(email, `<h3>Link para alteração de senha NeedFarma: <a href="${resetUrl}">Alterar Senha</a></h3>`);
@@ -377,7 +377,7 @@ const userController = {
                 return res.status(500).json({ sucess: false, msg: "O usuário não foi encontrado" });
             }
 
-            const resetUrl = `http://127.0.0.1:5500/pages/site/changePass.html?token=${resetToken}`;
+            const resetUrl = `https://parceiros-need-farma.vercel.app/pages/site/changePass.html?token=${resetToken}`;
 
             sendVerificationEmail(email, `<h3>Link para alteração de senha NeedFarma: <a href="${resetUrl}">Alterar Senha</a></h3>`);
 

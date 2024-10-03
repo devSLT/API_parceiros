@@ -26,7 +26,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.get('/',(req,res)=>{
-    res.status(200).send("Hello World")
+    res.status(200).send("...")
 })
 
 app.use('/user', userRouter)
