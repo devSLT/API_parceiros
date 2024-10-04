@@ -98,28 +98,35 @@ const userController = {
                         const verCnpjanalise = await userAnalise.findOne({ cnpj });
                         const verPersonalPhoneanalise = await userAnalise.findOne({ personalPhone });
             */
-            const verificarAceitos = await UserAceito.findOne({ businessName, email, phone, personalPhone, cnpj });
-            const verificarNegados = await UserNegados.findOne({ businessName, email, phone, personalPhone, cnpj });
-            const verificaTemp = await UserTemp.findOne({ businessName, email, phone, personalPhone, cnpj });
-            const verificarAnalises = await userAnalise.findOne({ businessName, email, phone, personalPhone, cnpj });
+            const verificarExistencia = async () => {
+                const [verificarAceitos, verificarNegados, verificaTemp, verificarAnalises] = await Promise.all([
+                    UserAceito.findOne({ businessName, email, phone, personalPhone, cnpj }),
+                    UserNegados.findOne({ businessName, email, phone, personalPhone, cnpj }),
+                    UserTemp.findOne({ businessName, email, phone, personalPhone, cnpj }),
+                    userAnalise.findOne({ businessName, email, phone, personalPhone, cnpj })
+                ]);
 
-            // Se forem unicos autoriza a criacao
-            if (verificarAceitos || verificarNegados || verificaTemp || verificarAnalises) {
-                return res.status(409).json({ msg: "Os dados inseridos já estão sendo usados." })
+                return verificarAceitos || verificarNegados || verificaTemp || verificarAnalises;
+            };
+
+            const existeUsuario = await verificarExistencia();
+
+            if (existeUsuario) {
+                return res.status(409).json({ msg: "Os dados inseridos já estão sendo usados." });
             }
 
             //Salva o usuario temporario
             await userTemp.save();
 
             //Envia o codigo para confirmacao do e-mail
-            sendVerificationEmail(email, 
-                
-            ` <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            sendVerificationEmail(email,
+
+                ` <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: white; border-radius: 8px 8px 0 0;">
             <h1 style="margin: 0;">Verificação de Email</h1>
         </div>
         <div style="padding: 20px;">
-            <h2 style="color: #333;">Olá,</h2>
+            <h2 style="color: #333;">Olá, somos da NeedFarma, você está recebendo um E-mail e verificação</h2>
             <p style="color: #555;">Obrigado por se registrar! Por favor, use o código abaixo para verificar seu e-mail:</p>
             <div style="margin: 20px 0; padding: 15px; background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 5px; text-align: center;">
                 <h3 style="color: #4CAF50; font-size: 24px; margin: 0;">${verificationCode}</h3>
@@ -127,7 +134,7 @@ const userController = {
             <p style="color: #555;">Se você não se registrou, ignore este e-mail.</p>
         </div>
         <div style="padding: 20px; text-align: center; background-color: #f4f4f4; border-radius: 0 0 8px 8px;">
-            <p style="color: #777; font-size: 14px;">&copy; 2024 Sua Empresa. Todos os direitos reservados.</p>
+            <p style="color: #777; font-size: 14px;">&copy; 2024 Parceiros NeedFarma. Todos os direitos reservados.</p>
         </div>
     </div>`)
             res.status(201).json({ msg: 'Código de verificação enviado.' });
@@ -160,13 +167,13 @@ const userController = {
                     return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
                 }
 
-                sendVerificationEmail(email,      
+                sendVerificationEmail(email,
                     ` <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                 <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: white; border-radius: 8px 8px 0 0;">
                     <h1 style="margin: 0;">Reenvio de código de verificação de Email</h1>
                 </div>
                 <div style="padding: 20px;">
-                    <h2 style="color: #333;">Olá,</h2>
+                    <h2 style="color: #333;">Olá, somos da NeedFarma, você está recebendo um E-mail e verificação</h2>
                     <p style="color: #555;">Obrigado por se registrar! Por favor, use o código abaixo para verificar seu e-mail:</p>
                     <div style="margin: 20px 0; padding: 15px; background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 5px; text-align: center;">
                         <h3 style="color: #4CAF50; font-size: 24px; margin: 0;">${newCode}</h3>
@@ -174,7 +181,7 @@ const userController = {
                     <p style="color: #555;">Se você não se registrou, ignore este e-mail.</p>
                 </div>
                 <div style="padding: 20px; text-align: center; background-color: #f4f4f4; border-radius: 0 0 8px 8px;">
-                    <p style="color: #777; font-size: 14px;">&copy; 2024 Sua Empresa. Todos os direitos reservados.</p>
+                    <p style="color: #777; font-size: 14px;">&copy; 2024 Parceiros NeedFarma. Todos os direitos reservados.</p>
                 </div>
             </div>`)
 

@@ -6,7 +6,7 @@ const usertempSchema = new mongoose.Schema({
     businessName: { type: String, required: true, },
     email: { type: String, required: true, unique: true, lowercase: true },
     phone: { type: Number, required: true, unique: true, },
-    personalPhone: { type: Number, required: true, unique: true, },
+    personalPhone: { type: Number, unique: true, },
     cnpj: { type: Number, required: true, unique: true, },
     businessType: { type: String, required: true,},
     cep: { type: Number, required: true,},
