@@ -9,7 +9,7 @@ const signupanaliseSchema = new mongoose.Schema({
     personalPhone: { type: Number, required: true, unique: true, },
     cnpj: { type: Number, required: true, unique: true, },
     businessType: { type: String, required: true, },
-    cep: { type: Number, required: true, },
+    cep: { type: Number, required: true, unique:false},
     address: { type: String, required: true, },
     password: { type: String, required: true, },
     admin: { type: Boolean, default: false, },

@@ -44,11 +44,11 @@ const userController = {
         }
 
         if (!inpValidacoes.validatePhone(phone)) {
-            return res.status(400).json({ msg: "Insira um Telefone válido, utilizando somente números." });
+            return res.status(400).json({ msg: "Insira um Telefone válido, utilize somente números." });
         }
 
         if (!inpValidacoes.validateCEP(cep)) {
-            return res.status(400).json({ msg: "Insira um CEP válido, utilizando somente números." });
+            return res.status(400).json({ msg: "Insira um CEP válido, utilize somente números." });
         }
 
         //BCRYPT
@@ -74,30 +74,8 @@ const userController = {
         });
 
         try {
-            /*
-                        //Separa os principais identificadores para verificar se sao unicos em temporarios
-                        const businessNametemp = await UserTemp.findOne({businessName})
-                        const verEmailtemp = await UserTemp.findOne({ email });
-                        const verPhonetemp = await UserTemp.findOne({ phone });
-                        const verCnpjtemp = await UserTemp.findOne({ cnpj });
-                        const verPersonalPhonetemp = await UserTemp.findOne({ personalPhone })
-                        //Verificando se são unicos nos DB aceitos
-                        const businessName = await UserTemp.findOne({businessName})
-                        const verEmailaceitos = await UserAceito.findOne({ email });
-                        const verPhoneaceitos = await UserAceito.findOne({ phone });
-                        const verCnpjaceitos = await UserAceito.findOne({ cnpj });
-                        const verPersonalPhoneaceito = await UserAceito.findOne({ personalPhone });
-                        //Verificando se são unicos nos DB rejeitados
-                        const verEmailrecusados = await UserNegados.findOne({ email });
-                        const verPhonerecusados = await UserNegados.findOne({ phone });
-                        const verCnpjrecusados = await UserNegados.findOne({ cnpj });
-                        const verPersonalPhonerecusados = await UserNegados.findOne({ personalPhone });
-                        //Verificando se são unicos nos DB rejeitados
-                        const verEmailanalise = await userAnalise.findOne({ email });
-                        const verPhoneanalise = await userAnalise.findOne({ phone });
-                        const verCnpjanalise = await userAnalise.findOne({ cnpj });
-                        const verPersonalPhoneanalise = await userAnalise.findOne({ personalPhone });
-            */
+
+            //Faz todas as verificacoes simultaneas utilizando a promisse
             const verificarExistencia = async () => {
                 const [verificarAceitos, verificarNegados, verificaTemp, verificarAnalises] = await Promise.all([
                     UserAceito.findOne({ $or: [{ businessName }, { email }, { phone }, { personalPhone }, { cnpj }] }),
@@ -106,6 +84,7 @@ const userController = {
                     userAnalise.findOne({ $or: [{ businessName }, { email }, { phone }, { personalPhone }, { cnpj }] })
                 ]);
 
+                //O uso do !! retorna boolean
                 return !!(verificarAceitos || verificarNegados || verificaTemp || verificarAnalises);
             };
 
