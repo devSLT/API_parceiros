@@ -15,6 +15,7 @@ const usertempSchema = new mongoose.Schema({
     admin: { type: Boolean, default: false, },
     verificationcode: { type: String, required: true,},
     expiresAt: { type: Date, required: true,},
+    expiresAfter: { type: Date, required: true,},
 })
 
 /*Exportar a maneiro como ele sera chamo, depois o nome do Schema*/
