@@ -4,6 +4,7 @@ const router = express.Router();
 const emAnalise = require('../../models/tabelaEmAnaliseModel.js'); // Importar model dos em analise
 const aceitados = require('../../models/tabelaAceitadosModel.js'); // Importar model dos aceitados
 const negados = require('../../models/tabelaNegadosModel.js'); //  Importar model dos negados
+const { generateVerificationCode, sendVerificationEmail, } = require('../../models/verificationEmail.js')
 
 // pegar lista completa de contas em analise
 router.get('/emAnalise', async (req, res) => {
@@ -190,6 +191,26 @@ router.delete('/adminAccept', async (req, res) => {
         // apagar o original
         await emAnalise.findByIdAndDelete(id);
 
+        const email = documentToDelete.email
+        sendVerificationEmail(email,
+            `<div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: white; border-radius: 8px 8px 0 0;">
+                    <h1 style="margin: 0;">Aprovação no site Parceiros NeedFarma</h1>
+                </div>
+                <div style="padding: 20px;">
+                    <h2 style="color: #333;">Olá,</h2>
+                    <p style="color: #555;">Seja Bem Vindo Ao Grupo Parceiros Needfarma. Agora você pode fazer login e acessar sua conta.</p>
+                    <p style="color: #555;">Clique no link abaixo para fazer login:</p>
+                    <p style="text-align: center;">
+                        <a href="https:/www.parceiros-need-farma.vercel.app/pages/site/login.html" style="padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Fazer Login</a>
+                    </p>
+                </div>
+                <div style="padding: 20px; text-align: center; background-color: #f4f4f4; border-radius: 0 0 8px 8px;">
+                    <p style="color: #777; font-size: 14px;">&copy; 2024 Parceiros NeedFarma. Todos os direitos reservados.</p>
+                </div>
+            </div>`
+        )
+
         res.status(200).json({ message: 'Usuário ativado com sucesso' });
     } catch (error) {
         console.error('Erro processando ativação:', error);
@@ -204,7 +225,7 @@ router.delete('/adminDeny', async (req, res) => {
 
         // validação do MongoDB ObjectId
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'ObjectId Invalido' });
+            return res.status(400).json({ message: 'ObjectId Inválido' });
         }
 
         const documentToDelete = await emAnalise.findById(id);
@@ -233,6 +254,26 @@ router.delete('/adminDeny', async (req, res) => {
 
         // apagar o original
         await emAnalise.findByIdAndDelete(id);
+
+        const email = documentToDelete.email
+        sendVerificationEmail(email,
+            `<div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: white; border-radius: 8px 8px 0 0;">
+                    <h1 style="margin: 0;">Negado no Site Parceiros NeedFarma</h1>
+                </div>
+                <div style="padding: 20px;">
+                    <h2 style="color: #333;">Olá,</h2>
+                    <p style="color: #555;">Infelizmente você foi reprovado e não vai poder fazer parte do nosso grupo Parceiros NeedFarma.</p>
+                    <p style="color: #555;">Clique no link abaixo para entrar em contato com o suporte:</p>
+                    <p style="text-align: center;">
+                        <a href="mailto:suporte@parceiros.needfarma.com.br" style="padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Entrar em contato com suporte</a>
+                    </p>
+                </div>
+                <div style="padding: 20px; text-align: center; background-color: #f4f4f4; border-radius: 0 0 8px 8px;">
+                    <p style="color: #777; font-size: 14px;">&copy; 2024 Parceiros NeedFarma. Todos os direitos reservados.</p>
+                </div>
+            </div>`
+        )
 
         res.status(200).json({ message: 'Usuário ativado com sucesso' });
     } catch (error) {
@@ -278,6 +319,26 @@ router.delete('/adminUndeny', async (req, res) => {
         // apagar o original
         await negados.findByIdAndDelete(id);
 
+        const email = documentToDelete.email
+        sendVerificationEmail(email,
+            `<div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: white; border-radius: 8px 8px 0 0;">
+                    <h1 style="margin: 0;">Reaceitação no Site Parceiros NeedFarma</h1>
+                </div>
+                <div style="padding: 20px;">
+                    <h2 style="color: #333;">Olá,</h2>
+                    <p style="color: #555;">Você foi aceito no site da NeedFarma. Agora você pode fazer login e acessar sua conta.</p>
+                    <p style="color: #555;">Clique no link abaixo para fazer login:</p>
+                    <p style="text-align: center;">
+                        <a href="https:/www.parceiros-need-farma.vercel.app/pages/site/login.html" style="padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Fazer Login</a>
+                    </p>
+                </div>
+                <div style="padding: 20px; text-align: center; background-color: #f4f4f4; border-radius: 0 0 8px 8px;">
+                    <p style="color: #777; font-size: 14px;">&copy; 2024 Parceiros NeedFarma. Todos os direitos reservados.</p>
+                </div>
+            </div>`
+        )
+
         res.status(200).json({ message: 'Usuário ativado com sucesso' });
     } catch (error) {
         console.error('Erro processando ativação:', error);
@@ -321,6 +382,26 @@ router.delete('/adminUnaccept', async (req, res) => {
 
         // apagar o original
         await aceitados.findByIdAndDelete(id);
+
+        const email = documentToDelete.email
+        sendVerificationEmail(email,
+            `<div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: white; border-radius: 8px 8px 0 0;">
+                    <h1 style="margin: 0;">Negado no Site Parceiros NeedFarma</h1>
+                </div>
+                <div style="padding: 20px;">
+                    <h2 style="color: #333;">Olá,</h2>
+                    <p style="color: #555;">Infelizmente você não foi aprovado para fazer parte do nosso grupo Parceiros NeedFarma.</p>
+                    <p style="color: #555;">Clique no link abaixo para entrar em contato com o suporte:</p>
+                    <p style="text-align: center;">
+                        <a href="mailto:suporte@parceiros.needfarma.com.br" style="padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Entrar em contato com suporte</a>
+                    </p>
+                </div>
+                <div style="padding: 20px; text-align: center; background-color: #f4f4f4; border-radius: 0 0 8px 8px;">
+                    <p style="color: #777; font-size: 14px;">&copy; 2024 Parceiros NeedFarma. Todos os direitos reservados.</p>
+                </div>
+            </div>`
+        )
 
         res.status(200).json({ message: 'Usuário ativado com sucesso' });
     } catch (error) {

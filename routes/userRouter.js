@@ -4,6 +4,8 @@ const router = express.Router();
 //Controllers
 const userController = require('../controllers/userController.js')
 
+//EMAIL=thiago368orjorge@gmail.com
+//EMAIL_PASS=ypoz cnub bpyc rqec
 
 //Registrar conta
 router.post('/register', userController.register);

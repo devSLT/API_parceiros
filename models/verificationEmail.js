@@ -11,7 +11,10 @@ const EMAIL_PASS = process.env.EMAIL_PASS
 // Função para enviar e-mail
 const sendVerificationEmail = async (email, code) => {
     const transporter = nodemailer.createTransport({
-        service: 'gmail', // ou outro serviço de e-mail
+        host: 'smtp.parceiros.needfarma.com.br',
+        //service: 'gmail', // ou outro serviço de e-mail
+        port: 465, // Para conexões seguras via SSL
+        secure: true,
         auth: {
             user: `${EMAIL}`,
             pass: `${EMAIL_PASS}`,
@@ -23,6 +26,11 @@ const sendVerificationEmail = async (email, code) => {
         to: email,
         subject: 'Verificação de E-mail NeedFarma Parceiros',
         html: code,
+        headers: {
+            'X-Priority': '1 (Highest)', // Indica prioridade do e-mail
+            'X-MSMail-Priority': 'High', // Usado por serviços como o Hotmail
+            'Importance': 'High',        // Outro cabeçalho de importância
+        },
     };
 
     try {
