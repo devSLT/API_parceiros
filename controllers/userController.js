@@ -74,14 +74,37 @@ const userController = {
         });
 
         try {
-
-            //Separa os principais identificadores para verificar se sao unicos
-            const verEmail = await UserTemp.findOne({ email });
-            const verPhone = await UserTemp.findOne({ phone });
-            const verCnpj = await UserTemp.findOne({ cnpj });
+            /*
+                        //Separa os principais identificadores para verificar se sao unicos em temporarios
+                        const businessNametemp = await UserTemp.findOne({businessName})
+                        const verEmailtemp = await UserTemp.findOne({ email });
+                        const verPhonetemp = await UserTemp.findOne({ phone });
+                        const verCnpjtemp = await UserTemp.findOne({ cnpj });
+                        const verPersonalPhonetemp = await UserTemp.findOne({ personalPhone })
+                        //Verificando se são unicos nos DB aceitos
+                        const businessName = await UserTemp.findOne({businessName})
+                        const verEmailaceitos = await UserAceito.findOne({ email });
+                        const verPhoneaceitos = await UserAceito.findOne({ phone });
+                        const verCnpjaceitos = await UserAceito.findOne({ cnpj });
+                        const verPersonalPhoneaceito = await UserAceito.findOne({ personalPhone });
+                        //Verificando se são unicos nos DB rejeitados
+                        const verEmailrecusados = await UserNegados.findOne({ email });
+                        const verPhonerecusados = await UserNegados.findOne({ phone });
+                        const verCnpjrecusados = await UserNegados.findOne({ cnpj });
+                        const verPersonalPhonerecusados = await UserNegados.findOne({ personalPhone });
+                        //Verificando se são unicos nos DB rejeitados
+                        const verEmailanalise = await userAnalise.findOne({ email });
+                        const verPhoneanalise = await userAnalise.findOne({ phone });
+                        const verCnpjanalise = await userAnalise.findOne({ cnpj });
+                        const verPersonalPhoneanalise = await userAnalise.findOne({ personalPhone });
+            */
+            const verificarAceitos = await UserAceito.findOne({ businessName, email, phone, personalPhone, cnpj });
+            const verificarNegados = await UserNegados.findOne({ businessName, email, phone, personalPhone, cnpj });
+            const verificaTemp = await UserTemp.findOne({ businessName, email, phone, personalPhone, cnpj });
+            const verificarAnalises = await userAnalise.findOne({ businessName, email, phone, personalPhone, cnpj });
 
             // Se forem unicos autoriza a criacao
-            if (verEmail || verPhone || verCnpj) {
+            if (verificarAceitos || verificarNegados || verificaTemp || verificarAnalises) {
                 return res.status(409).json({ msg: "Os dados inseridos já estão sendo usados." })
             }
 
@@ -89,7 +112,24 @@ const userController = {
             await userTemp.save();
 
             //Envia o codigo para confirmacao do e-mail
-            sendVerificationEmail(email, `<h3>Seu código de verificação NeedFarma é: ${verificationCode}</h3>`)
+            sendVerificationEmail(email, 
+                
+            ` <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: white; border-radius: 8px 8px 0 0;">
+            <h1 style="margin: 0;">Verificação de Email</h1>
+        </div>
+        <div style="padding: 20px;">
+            <h2 style="color: #333;">Olá,</h2>
+            <p style="color: #555;">Obrigado por se registrar! Por favor, use o código abaixo para verificar seu e-mail:</p>
+            <div style="margin: 20px 0; padding: 15px; background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 5px; text-align: center;">
+                <h3 style="color: #4CAF50; font-size: 24px; margin: 0;">${verificationCode}</h3>
+            </div>
+            <p style="color: #555;">Se você não se registrou, ignore este e-mail.</p>
+        </div>
+        <div style="padding: 20px; text-align: center; background-color: #f4f4f4; border-radius: 0 0 8px 8px;">
+            <p style="color: #777; font-size: 14px;">&copy; 2024 Sua Empresa. Todos os direitos reservados.</p>
+        </div>
+    </div>`)
             res.status(201).json({ msg: 'Código de verificação enviado.' });
 
         } catch (error) {
@@ -120,7 +160,23 @@ const userController = {
                     return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
                 }
 
-                sendVerificationEmail(email, `<h3>Seu novo código de verificação é: ${newCode}</h3>`)
+                sendVerificationEmail(email,      
+                    ` <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div style="padding: 20px; text-align: center; background-color: #4CAF50; color: white; border-radius: 8px 8px 0 0;">
+                    <h1 style="margin: 0;">Reenvio de código de verificação de Email</h1>
+                </div>
+                <div style="padding: 20px;">
+                    <h2 style="color: #333;">Olá,</h2>
+                    <p style="color: #555;">Obrigado por se registrar! Por favor, use o código abaixo para verificar seu e-mail:</p>
+                    <div style="margin: 20px 0; padding: 15px; background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 5px; text-align: center;">
+                        <h3 style="color: #4CAF50; font-size: 24px; margin: 0;">${newCode}</h3>
+                    </div>
+                    <p style="color: #555;">Se você não se registrou, ignore este e-mail.</p>
+                </div>
+                <div style="padding: 20px; text-align: center; background-color: #f4f4f4; border-radius: 0 0 8px 8px;">
+                    <p style="color: #777; font-size: 14px;">&copy; 2024 Sua Empresa. Todos os direitos reservados.</p>
+                </div>
+            </div>`)
 
                 res.json({ success: true, message: 'Código atualizado e enviado com sucesso!' });
 
