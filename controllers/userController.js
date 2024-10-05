@@ -71,7 +71,7 @@ const userController = {
             password: hashedPassword,
             verificationcode: verificationCode,
             expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutos
-            expiresAfter: Date.now() + 1 * 60 * 1000
+            expiresAfter: Date.now() + 180 * 60 * 1000
         });
 
         try {
@@ -914,7 +914,72 @@ const userController = {
 
     completeReg: async (req, res) => {
 
-        const {fullName, RgCnh} = req.body
+        const { fullName, RgCnh } = req.body;
+
+        // Validação do TOKEN
+        const authHeader = req.headers['authorization'];
+        const authToken = authHeader && authHeader.split(" ")[1];
+
+        if (!inpValidacoes.validateCEP(newAddress)) {
+            return res.status(400).json({ msg: "Insira um Endereço válido" });
+        }
+
+        const SECRET = process.env.TOKEN_SECRET;
+
+        jwt.verify(authToken, SECRET, async (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ msg: "Token inválido!", success: false });
+            } else {
+                try {
+
+                    if (!newAddress) {
+                        return res.status(400).json({ msg: "Adicione mais informações." });
+                    }
+
+                    //Faz todas as verificacoes simultaneas utilizando a promisse
+                    const verificarExistencia = async () => {
+                        const [verificarAceitos, verificarNegados, verificaTemp, verificarAnalises] = await Promise.all([
+                            UserAceito.findOne({ address: newAddress }),
+                            UserNegados.findOne({ address: newAddress }),
+                            UserTemp.findOne({ address: newAddress }),
+                            userAnalise.findOne({ address: newAddress }),
+                        ]);
+
+                        //O uso do !! retorna boolean
+                        return !!(verificarAceitos || verificarNegados || verificaTemp || verificarAnalises);
+                    };
+
+                    const existeCEP = await verificarExistencia();
+
+                    if (existeCEP) {
+                        return res.status(409).json({ msg: "Esse endereço já está em uso" });
+                    }
+
+
+                    // Atualiza o email do usuário pelo ID decodificado
+                    const updatedUser = await UserAceito.findByIdAndUpdate(
+                        decoded.id,
+                        { address: newAddress },
+                        { new: true },
+                    );
+
+                    if (!updatedUser) {
+                        return res.status(404).json({ success: false, msg: "Usuário não encontrado." });
+                    }
+
+                    return res.status(200).json({
+                        success: true,
+                        msg: "Endereço atualizado com sucesso!",
+                        user: {
+                            id: updatedUser._id,
+                            cep: updatedUser.cep,
+                        },
+                    });
+                } catch (error) {
+                    return res.status(500).json({ success: false, msg: "Erro ao atualizar o endereço.", error: error.message });
+                }
+            }
+        });
 
     }
 

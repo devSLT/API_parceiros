@@ -4,12 +4,40 @@ const router = express.Router();
 const emAnalise = require('../../models/tabelaEmAnaliseModel.js'); // Importar model dos em analise
 const aceitados = require('../../models/tabelaAceitadosModel.js'); // Importar model dos aceitados
 const negados = require('../../models/tabelaNegadosModel.js'); //  Importar model dos negados
+const docs = require('../../models/tabelaDocsModel.js'); //  Importar model dos negados
 const { generateVerificationCode, sendVerificationEmail, } = require('../../models/verificationEmail.js')
+
+router.get('/dashboard', async (req, res) => {
+    try {
+        // Get counts of each collection
+        const [usersCount, userDeniedsCount, userDocsCount, userAnalisesCount] = await Promise.all([
+            aceitados.countDocuments({}),
+            negados.countDocuments({}),
+            docs.countDocuments({}),
+            emAnalise.countDocuments({})
+        ]);
+
+        // Total count of users, denieds, and analises
+        const total = usersCount + userDeniedsCount + userAnalisesCount;
+
+        // Send the response with required data
+        res.status(200).json({
+            total: total,
+            users: usersCount,
+            userDenieds: userDeniedsCount,
+            userAnalises: userAnalisesCount,
+            userDocs: userDocsCount,
+        });
+    } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        res.status(500).json({ message: 'Error fetching dashboard data' });
+    }
+});
 
 // pegar lista completa de contas em analise
 router.get('/emAnalise', async (req, res) => {
     try {
-        const documents = await emAnalise.find({});
+        const documents = await emAnalise.find({ admin: false });
         // formatação da data
         const formatDate = (date) => {
             const d = new Date(date);
@@ -38,7 +66,7 @@ router.get('/emAnalise', async (req, res) => {
 // pegar lista completa de contas aceitadas
 router.get('/aceitados', async (req, res) => {
     try {
-        const documents = await aceitados.find({});
+        const documents = await aceitados.find({ admin: false });
         // formatação da data
         const formatDate = (date) => {
             const d = new Date(date);
@@ -67,7 +95,7 @@ router.get('/aceitados', async (req, res) => {
 // pegar lista completa de contas negadas
 router.get('/negados', async (req, res) => {
     try {
-        const documents = await negados.find({});
+        const documents = await negados.find({ admin: false });
         // formatação da data
         const formatDate = (date) => {
             const d = new Date(date);
@@ -98,9 +126,9 @@ router.get('/', async (req, res) => {
     try {
         // pegar dados de todas as listas separadamente
         const [emAnaliseDocs, aceitadosDocs, negadosDocs] = await Promise.all([
-            emAnalise.find({}),
-            aceitados.find({}),
-            negados.find({})
+            emAnalise.find({ admin: false }),
+            aceitados.find({ admin: false }),
+            negados.find({ admin: false })
         ]);
         // formatação da data
         const formatDate = (date) => {
