@@ -29,9 +29,33 @@ router.post('/forgotPass', userController.forgotPassword);
 router.get('/resetPass', userController.resetPassword);
 
 //Change Password
-router.put('/changePass', userController.changePassword)
+router.put('/changePass', userController.changePassword);
 
 //Reenvia link para alteracao de senha
-router.put('/resendPass', userController.resendPassword)
+router.put('/resendPass', userController.resendPassword);
+
+//Rota GET para pegar informacoes tela config usuarios
+router.get('/getInfos', userController.getInfos);
+
+//Mudar informacoes ja exitentes apos verificar o token na pagina
+router.put('/changeEmail', userController.changeEmail);
+
+//Mudar phone
+router.put('/changePhone', userController.changePhone);
+
+//changePersonalPhone
+router.put('/changePersonalPhone', userController.changePersonalPhone);
+
+//change CNPJ
+router.put('/changeCnpj', userController.changeCnpj);
+
+//change cep
+router.put('/changeCep', userController.changeCep);
+
+//change address
+router.put('/changeAddress', userController.changeAddress);
+
+//Completar informacoes cadastro
+router.post('/completeReg', userController.completeReg)
 
 module.exports = router

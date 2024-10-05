@@ -11,8 +11,8 @@ const EMAIL_PASS = process.env.EMAIL_PASS
 // Função para enviar e-mail
 const sendVerificationEmail = async (email, code) => {
     const transporter = nodemailer.createTransport({
-        host: 'smtp.parceiros.needfarma.com.br',
-        //service: 'gmail', // ou outro serviço de e-mail
+        //host: 'parceiros.needfarma.com.br',
+        service: 'gmail', // ou outro serviço de e-mail
         port: 465, // Para conexões seguras via SSL
         secure: true,
         auth: {
