@@ -912,6 +912,7 @@ const userController = {
         });
     },
 
+    //Completar RG/CNH E NOME COMPLETO VERIFICACOES
     completeReg: async (req, res) => {
 
         const { fullName, RgCnh } = req.body;
@@ -920,8 +921,12 @@ const userController = {
         const authHeader = req.headers['authorization'];
         const authToken = authHeader && authHeader.split(" ")[1];
 
-        if (!inpValidacoes.validateCEP(newAddress)) {
-            return res.status(400).json({ msg: "Insira um Endereço válido" });
+        if (!inpValidacoes.validateFullName(fullName)) {
+            return res.status(400).json({ msg: "Preencha o nome corretamente" });
+        }
+
+        if (!inpValidacoes.validateDocument(RgCnh)) {
+            return res.status(400).json({ msg: "Preencha o campo de RG / CNH corretamente" });
         }
 
         const SECRET = process.env.TOKEN_SECRET;
@@ -932,17 +937,13 @@ const userController = {
             } else {
                 try {
 
-                    if (!newAddress) {
-                        return res.status(400).json({ msg: "Adicione mais informações." });
-                    }
-
                     //Faz todas as verificacoes simultaneas utilizando a promisse
                     const verificarExistencia = async () => {
                         const [verificarAceitos, verificarNegados, verificaTemp, verificarAnalises] = await Promise.all([
-                            UserAceito.findOne({ address: newAddress }),
-                            UserNegados.findOne({ address: newAddress }),
-                            UserTemp.findOne({ address: newAddress }),
-                            userAnalise.findOne({ address: newAddress }),
+                            UserAceito.findOne({ fullName: newAddress }),
+                            UserNegados.findOne({ fullName: newAddress }),
+                            UserTemp.findOne({ fullName: newAddress }),
+                            userAnalise.findOne({ fullName: newAddress }),
                         ]);
 
                         //O uso do !! retorna boolean
