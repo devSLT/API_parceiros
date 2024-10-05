@@ -37,7 +37,7 @@ router.get('/dashboard', async (req, res) => {
 // pegar lista completa de contas em analise
 router.get('/emAnalise', async (req, res) => {
     try {
-        const documents = await emAnalise.find({});
+        const documents = await emAnalise.find({ admin: false });
         // formatação da data
         const formatDate = (date) => {
             const d = new Date(date);
@@ -66,7 +66,7 @@ router.get('/emAnalise', async (req, res) => {
 // pegar lista completa de contas aceitadas
 router.get('/aceitados', async (req, res) => {
     try {
-        const documents = await aceitados.find({});
+        const documents = await aceitados.find({ admin: false });
         // formatação da data
         const formatDate = (date) => {
             const d = new Date(date);
@@ -95,7 +95,7 @@ router.get('/aceitados', async (req, res) => {
 // pegar lista completa de contas negadas
 router.get('/negados', async (req, res) => {
     try {
-        const documents = await negados.find({});
+        const documents = await negados.find({ admin: false });
         // formatação da data
         const formatDate = (date) => {
             const d = new Date(date);
@@ -126,9 +126,9 @@ router.get('/', async (req, res) => {
     try {
         // pegar dados de todas as listas separadamente
         const [emAnaliseDocs, aceitadosDocs, negadosDocs] = await Promise.all([
-            emAnalise.find({}),
-            aceitados.find({}),
-            negados.find({})
+            emAnalise.find({ admin: false }),
+            aceitados.find({ admin: false }),
+            negados.find({ admin: false })
         ]);
         // formatação da data
         const formatDate = (date) => {
