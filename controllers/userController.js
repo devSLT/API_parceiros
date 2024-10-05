@@ -71,7 +71,7 @@ const userController = {
             password: hashedPassword,
             verificationcode: verificationCode,
             expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutos
-            expiresAfter: Date.now() + 1 * 60 * 1000
+            expiresAfter: Date.now() + 180 * 60 * 1000 //3 horas
         });
 
         try {
