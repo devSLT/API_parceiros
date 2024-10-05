@@ -9,6 +9,9 @@ const signupanaliseSchema = new mongoose.Schema({
     },
     personalName: { type: String, required: true, },
     rgCnh: { type: Number, required: true},
+    bank: {type: String,},
+    agency: {type:String},
+    bankAccount: {type:String,},
 })
 
 /*Exportar a maneiro como ele sera chamo, depois o nome do Schema*/

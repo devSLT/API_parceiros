@@ -89,6 +89,17 @@ const inputValidacoes = {
         // Caso não seja RG nem CNH
         return { isValid: false, type: null };
     },
+
+    validateAgency: (agency) => {
+        const agencyRegex = /^\d{4,5}-?\d?$/;
+        return agencyRegex.test(agency);
+    },
+
+    validateBankAccount: (bankAccount) => {
+        const accountRegex = /^\d{6,10}-?\d?$/;
+        return accountRegex.test(bankAccount);
+    },
+
 }
 
 module.exports = inputValidacoes;

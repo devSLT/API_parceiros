@@ -4,7 +4,8 @@ const userAnalise = require('../models/UserAnalise.js');
 const UserTemp = require('../models/UserTemp.js');
 const UserAceito = require('../models/tabelaAceitadosModel.js');
 const UserNegados = require('../models/tabelaNegadosModel.js');
-const UserDocs = require('../models/tabelaDocsModel.js')
+const UserDocs = require('../models/tabelaDocsModel.js');
+const UserBankData = require('../models/userBankData.js');
 //Functions Gerar e Enviar
 const { generateVerificationCode, sendVerificationEmail } = require('../models/verificationEmail.js');
 
@@ -946,7 +947,7 @@ const userController = {
                     // Verifica se já existem documentos com esse RG/CNH ou nome completo
                     const verificarExistencia = async () => {
                         const verificarDocs = await UserDocs.findOne({
-                            $or: [{ personalName: fullName }, { rgCnh: RgCnh }, {_id: userId}]
+                            $or: [{ personalName: fullName }, { rgCnh: RgCnh }, { _id: userId }]
                         });
 
                         // Retorna boolean indicando se já existem documentos
@@ -983,8 +984,148 @@ const userController = {
                 }
             }
         });
-    }
+    },
 
+    verifyBankData: async (req, res) => {
+        // Validação do TOKEN
+        const authHeader = req.headers['authorization'];
+        const authToken = authHeader && authHeader.split(" ")[1];
+
+        const SECRET = process.env.TOKEN_SECRET;
+
+        jwt.verify(authToken, SECRET, async (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ msg: "Token inválido!", success: false });
+            } else {
+                try {
+                    // Obter o ID do usuário a partir do token JWT
+                    const userId = decoded.id;
+
+                    const existBank = await UserBankData.findById(userId)
+
+                    if (existBank) {
+                        return res.status(200).json({ exists: true, msg: "O usuário já possui uma conta de banco adicionada" })
+                    }
+
+                    return res.status(200).json({ exists: false, msg: "O usuário não possui uma conta de banco adicionada" })
+
+                } catch (error) {
+                    return res.status(500).json({ success: false, msg: "Erro ao enviar os dados.", error: error.message });
+                }
+            }
+        });
+    },
+
+    bankData: async (req, res) => {
+
+        const { bank, agency, bankAccount } = req.body;
+
+        // Validação do TOKEN
+        const authHeader = req.headers['authorization'];
+        const authToken = authHeader && authHeader.split(" ")[1];
+
+        //Validacoes de agencia e conta do banco
+        if (!inpValidacoes.validateAgency(agency)) {
+            return res.status(400).json({ msg: "Preencha a agência corretamente" });
+        }
+
+        if (!inpValidacoes.validateBankAccount(bankAccount)) {
+            return res.status(400).json({ msg: "Preencha a conta bancária corretamente" });
+        }
+
+        const SECRET = process.env.TOKEN_SECRET;
+
+        jwt.verify(authToken, SECRET, async (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ msg: "Token inválido!", success: false });
+            } else {
+                try {
+                    // Obter o ID do usuário a partir do token JWT
+                    const userId = decoded.id;
+
+                    const userbankdata = new UserBankData({
+                        _id: userId,
+                        bank,
+                        agency,
+                        bankAccount,
+                    });
+
+                    // Salva o documento
+                    await userbankdata.save();
+
+                    return res.status(200).json({
+                        success: true,
+                        msg: "Dados Bancários adicionados com sucesso!",
+                        user: {
+                            id: userId,
+                            bank: bank,
+                            agency: agency,
+                            bankAccount: bankAccount,
+                        },
+                    });
+                } catch (error) {
+                    return res.status(500).json({ success: false, msg: "Erro ao enviar os dados.", error: error.message });
+                }
+            }
+        });
+
+    },
+
+    changeBankData: async (req, res) => {
+
+        const { bank, agency, bankAccount } = req.body;
+
+        // Validação do TOKEN
+        const authHeader = req.headers['authorization'];
+        const authToken = authHeader && authHeader.split(" ")[1];
+
+        //Validacoes de agencia e conta do banco
+        if (!inpValidacoes.validateAgency(agency)) {
+            return res.status(400).json({ msg: "Preencha a agência corretamente" });
+        }
+
+        if (!inpValidacoes.validateBankAccount(bankAccount)) {
+            return res.status(400).json({ msg: "Preencha a conta bancária corretamente" });
+        }
+
+        const SECRET = process.env.TOKEN_SECRET;
+
+        jwt.verify(authToken, SECRET, async (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ msg: "Token inválido!", success: false });
+            } else {
+                try {
+                    // Obter o ID do usuário a partir do token JWT
+                    const userId = decoded.id;
+
+                    const bankDataUpdate = await UserBankData.findByIdAndUpdate(userId, {
+                        bank,
+                        agency,
+                        bankAccount,
+                    }, { new: true });
+
+                    if (!bankDataUpdate) {
+                        return res.status(404).json({ success: false, msg: "Usuário não encontrado!" });
+                    }
+
+                    return res.status(200).json({
+                        success: true,
+                        msg: "Dados bancários atualizados com sucesso!",
+                        user: {
+                            id: userId,
+                            bank: bankDataUpdate.bank,
+                            agency: bankDataUpdate.agency,
+                            bankAccount: bankDataUpdate.bankAccount,
+                        },
+                    });
+
+                } catch (error) {
+                    return res.status(500).json({ success: false, msg: "Erro ao enviar os dados.", error: error.message });
+                }
+            }
+        });
+
+    }
 
 }
 

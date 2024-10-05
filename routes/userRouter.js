@@ -34,6 +34,8 @@ router.put('/changePass', userController.changePassword);
 //Reenvia link para alteracao de senha
 router.put('/resendPass', userController.resendPassword);
 
+
+/*Mudacas para adm*/
 //Rota GET para pegar informacoes tela config usuarios
 router.get('/getInfos', userController.getInfos);
 
@@ -57,5 +59,17 @@ router.put('/changeAddress', userController.changeAddress);
 
 //Completar informacoes cadastro
 router.post('/completeReg', userController.completeReg)
+
+//Pega as informacoes bancarias e salva em UserDocs
+router.post('/bankData', userController.bankData)
+
+//Rota verificar se ja exite conta bancaria no ID
+router.get('/verifyBankData', userController.verifyBankData)
+
+//Rota POST add dados bancarios
+router.post('/bankData', userController.bankData)
+
+//Rota PUT atualizar dados bancarios
+router.put('/changeBankData', userController.changeBankData)
 
 module.exports = router
