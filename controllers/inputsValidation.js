@@ -1,6 +1,44 @@
 //validacoes
 const validator = require('validator');
 
+function validateCNH(cnh) {
+    if (cnh.length !== 11) return false;
+
+    // Verifica se todos os dígitos são iguais, o que não é permitido
+    if (/^(\d)\1{10}$/.test(cnh)) return false;
+
+    let sum = 0;
+    let dsc = 0;
+
+    // Primeiro dígito verificador
+    for (let i = 0, j = 9; i < 9; ++i, --j) {
+        sum += cnh.charAt(i) * j;
+    }
+
+    let firstDigit = sum % 11;
+    if (firstDigit >= 10) {
+        firstDigit = 0;
+        dsc = 2;
+    }
+
+    sum = 0;
+
+    // Segundo dígito verificador
+    for (let i = 0, j = 1; i < 9; ++i, ++j) {
+        sum += cnh.charAt(i) * j;
+    }
+
+    let secondDigit = (sum % 11) - dsc;
+    if (secondDigit < 0) {
+        secondDigit += 11;
+    }
+    if (secondDigit >= 10) {
+        secondDigit = 0;
+    }
+
+    return firstDigit == cnh.charAt(9) && secondDigit == cnh.charAt(10);
+}
+
 const inputValidacoes = {
     // Prepara Verificacoes Regex && Validator
     validateFullName: function (name) {

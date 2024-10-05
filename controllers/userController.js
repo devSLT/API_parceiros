@@ -4,6 +4,7 @@ const userAnalise = require('../models/UserAnalise.js');
 const UserTemp = require('../models/UserTemp.js');
 const UserAceito = require('../models/tabelaAceitadosModel.js');
 const UserNegados = require('../models/tabelaNegadosModel.js');
+const UserDocs = require('../models/tabelaDocsModel.js')
 //Functions Gerar e Enviar
 const { generateVerificationCode, sendVerificationEmail } = require('../models/verificationEmail.js');
 
@@ -465,6 +466,7 @@ const userController = {
                 try {
                     // Use findById para buscar o usuário pelo ID decodificado
                     const user = await UserAceito.findById(decoded.id); // Aqui estava o erro
+                    const userAds = await UserDocs.findById(decoded.id);
 
                     if (!user) {
                         return res.status(404).json({ success: false, msg: "Usuário não encontrado." });
@@ -477,6 +479,8 @@ const userController = {
                         user: {
                             id: user._id,
                             email: user.email,
+                            name: userAds.personalName,
+                            rgCnh: userAds.rgCnh,
                             phone: user.phone,
                             personalPhone: user.personalPhone,
                             cnpj: user.cnpj,
@@ -912,7 +916,7 @@ const userController = {
         });
     },
 
-    //Completar RG/CNH E NOME COMPLETO VERIFICACOES
+    // Completar RG/CNH E NOME COMPLETO VERIFICACOES
     completeReg: async (req, res) => {
 
         const { fullName, RgCnh } = req.body;
@@ -926,7 +930,7 @@ const userController = {
         }
 
         if (!inpValidacoes.validateDocument(RgCnh)) {
-            return res.status(400).json({ msg: "Preencha o campo de RG / CNH corretamente" });
+            return res.status(400).json({ msg: "Preencha o campo de RG / CNH e nome corretamente" });
         }
 
         const SECRET = process.env.TOKEN_SECRET;
@@ -936,53 +940,51 @@ const userController = {
                 return res.status(401).json({ msg: "Token inválido!", success: false });
             } else {
                 try {
+                    // Obter o ID do usuário a partir do token JWT
+                    const userId = decoded.id;
 
-                    //Faz todas as verificacoes simultaneas utilizando a promisse
+                    // Verifica se já existem documentos com esse RG/CNH ou nome completo
                     const verificarExistencia = async () => {
-                        const [verificarAceitos, verificarNegados, verificaTemp, verificarAnalises] = await Promise.all([
-                            UserAceito.findOne({ fullName: newAddress }),
-                            UserNegados.findOne({ fullName: newAddress }),
-                            UserTemp.findOne({ fullName: newAddress }),
-                            userAnalise.findOne({ fullName: newAddress }),
-                        ]);
+                        const verificarDocs = await UserDocs.findOne({
+                            $or: [{ personalName: fullName }, { rgCnh: RgCnh }, {_id: userId}]
+                        });
 
-                        //O uso do !! retorna boolean
-                        return !!(verificarAceitos || verificarNegados || verificaTemp || verificarAnalises);
+                        // Retorna boolean indicando se já existem documentos
+                        return !!verificarDocs;
                     };
 
-                    const existeCEP = await verificarExistencia();
+                    const existeDocuments = await verificarExistencia();
 
-                    if (existeCEP) {
-                        return res.status(409).json({ msg: "Esse endereço já está em uso" });
+                    if (existeDocuments) {
+                        return res.status(409).json({ msg: "Já existe uma conta com esses dados" });
                     }
 
+                    // Cria o documento na coleção `UserDocs` usando o `id` do JWT como o `_id`
+                    const userdocs = new UserDocs({
+                        _id: userId, // Substitui o _id pelo id do JWT
+                        personalName: fullName,
+                        rgCnh: RgCnh,
+                    });
 
-                    // Atualiza o email do usuário pelo ID decodificado
-                    const updatedUser = await UserAceito.findByIdAndUpdate(
-                        decoded.id,
-                        { address: newAddress },
-                        { new: true },
-                    );
-
-                    if (!updatedUser) {
-                        return res.status(404).json({ success: false, msg: "Usuário não encontrado." });
-                    }
+                    // Salva o documento
+                    await userdocs.save();
 
                     return res.status(200).json({
                         success: true,
-                        msg: "Endereço atualizado com sucesso!",
+                        msg: "Documentos atualizados com sucesso!",
                         user: {
-                            id: updatedUser._id,
-                            cep: updatedUser.cep,
+                            id: userId,
+                            fullName: fullName,
+                            RgCnh: RgCnh,
                         },
                     });
                 } catch (error) {
-                    return res.status(500).json({ success: false, msg: "Erro ao atualizar o endereço.", error: error.message });
+                    return res.status(500).json({ success: false, msg: "Erro ao atualizar os dados.", error: error.message });
                 }
             }
         });
-
     }
+
 
 }
 
