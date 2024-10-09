@@ -279,7 +279,6 @@ const userController = {
 
                 },
                     SECRET,
-                    { expiresIn: '1d' }
                 );
 
 
